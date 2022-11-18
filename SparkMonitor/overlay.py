@@ -2,8 +2,8 @@ import cv2
 import numpy as np
 import os
 
-# load first image - **should be automated**
-final = cv2.imread('2022_08_16-12_59_45_AM0.bmp',cv2.COLOR_BGR2GRAY)
+# placeholder to grab first image 
+final = 0
 
 # Loop through files in directory
 try:
@@ -12,6 +12,8 @@ try:
             continue
         if (str(file)) == 'baseline.jpg': # Ignore baseline
             continue
+        if (final ==0 ):
+            final = cv2.imread(str(file),cv2.COLOR_BGR2GRAY)
         image = cv2.imread(str(file),cv2.COLOR_BGR2GRAY) # Read image as grayscale
         #cv2.imshow('image',final) # Show image for Debug
         #cv2.waitKey(0)
