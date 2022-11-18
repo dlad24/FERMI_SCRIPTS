@@ -62,9 +62,6 @@ int main()
 
 	}
 
-	//Grab proper dimension settings from camera
-	int frame_width = CamList[0].get(CAP_PROP_FRAME_WIDTH);
-	int frame_height = CamList[0].get(CAP_PROP_FRAME_HEIGHT);
 
 	//default filenames
 	std::string str("spark_1.avi");
