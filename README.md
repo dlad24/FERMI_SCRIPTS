@@ -4,7 +4,7 @@ Notes on Operation of Spark system
 Logging onto the Clean room Computer
 QC-PC is a local admin account on the computer, as opposed to the typical Fermilab domain accounts 
 When logging on, ensure that you are logging onto the “Local” instead of “FERMI” domain
-If it says fermi, add “PPD-138201/” to the beginning of the username – this could change based on hardware – there’s a tooltip listed under ‘additional domains’ or similar that tells you what to use
+If it says fermi, add “PPD-138201/” to the beginning of the username – this could change based on hardware – there’s a tooltip listed under ‘additional domains’ or similar that tells you what to use \n
 
 Username: QC-PC
 Password: Mu2eqc2022!
