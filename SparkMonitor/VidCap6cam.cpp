@@ -29,16 +29,27 @@ int main()
 		VideoCapture cam(i,CAP_DSHOW);
 		CamList.push_back(cam);
 	}
+
+	//Debug/check the cameras to make sure they're active
+	// Set the properties of each camera in the list
 	for (auto cam : CamList) {
 		if (!cam.isOpened()) {
 			std::cerr << "ERROR: Could not open camera" << std::endl;
 			return 1;
 		}
-		//set properties for each camera
-		cam.set(CAP_PROP_FRAME_WIDTH, 1920);
-		cam.set(CAP_PROP_FRAME_HEIGHT, 1080);
-		cam.set(CAP_PROP_FOURCC, VideoWriter::fourcc('M', 'J', 'P', 'G')); //For arducam MJPG is the only format that supports 1080p/30fps
-		cam.set(CAP_PROP_EXPOSURE, -4); // adjust value to get about 15fps for maximum spark capture rate (lower val = lower exposure time = higher framerate)
+
+		//leave these properties disabled until the system is powerful enough to run them
+
+		//Set the resolution of each camera, maximum value is 1920x1080p
+		//Typically the system will run at about 1/3 that value to maintain frame rates
+		//cam.set(CAP_PROP_FRAME_WIDTH, 1920);
+		//cam.set(CAP_PROP_FRAME_HEIGHT, 1080);
+
+		//For arducam MJPG is the only format that supports 1080p/30fps
+		cam.set(CAP_PROP_FOURCC, VideoWriter::fourcc('M', 'J', 'P', 'G')); 
+
+		//Adjust the exposure to increase the low light sensitivity
+		//cam.set(CAP_PROP_EXPOSURE, -4); // adjust value to get about 15fps for maximum spark capture rate (lower val = lower exposure time = higher framerate)
 	}
 
 	int bgnoise = 0;
@@ -63,14 +74,8 @@ int main()
 	}
 
 
-	////Set camera resolution, format, and exposure
-	//vcap.set(CAP_PROP_FRAME_WIDTH, 1920);
-	//vcap.set(CAP_PROP_FRAME_HEIGHT, 1080);
-	//vcap.set(CAP_PROP_FOURCC, VideoWriter::fourcc('M', 'J', 'P', 'G')); //For arducam MJPG is the only format that supports 1080p/30fps
-	//vcap.set(CAP_PROP_EXPOSURE, -4); // adjust value to get about 15fps for maximum spark capture rate (lower val = lower exposure time = higher framerate)
-
-
 	//Grab proper dimension settings from camera
+	// adjust for the size of 6 cameras on a single image
 	int frame_width = CamList[0].get(CAP_PROP_FRAME_WIDTH) * 3;
 	int frame_height = CamList[0].get(CAP_PROP_FRAME_HEIGHT) * 2;
 
@@ -91,7 +96,7 @@ int main()
 
 	int buf_length = 90; // ~4 seconds @ 100fps
 	int frame_activity = 0;
-	bool bg_flag = true;
+	bool bg_flag = true; 
 	int frame_number = 0;
 	time_t t = time(NULL);
 	
@@ -108,8 +113,8 @@ int main()
 			std::vector<Mat> framesArr;
 			for (auto cam : CamList) {
 				Mat frame;
-				cam >> frame;
-				flip(frame, frame, 0);
+				cam >> frame; //grab frame from camera
+				flip(frame, frame, 0); // for some reason each camera takes photos the upside down and backwards, correct for them
 				flip(frame, frame, 1);
 				framesArr.push_back(frame);
 			}
@@ -117,7 +122,7 @@ int main()
 
 			//**** This is where you have to select the correct order of cameras***
 			//Images from the camera are stored in framesArr 0,1,2,3,4,5
-			//Reorder array based on positon
+			//Reorder the position of frames in order to be the most legible
 			Mat topRow;
 			Mat matArrayTop[] = { framesArr[1],framesArr[5],framesArr[2] }; // Arrange frames in the top row of the array from left to right
 			hconcat(matArrayTop, 3, topRow); // merge images into single Mat
@@ -127,6 +132,7 @@ int main()
 			Mat matArrayFinal[] = { topRow,botRow }; 
 			Mat frame;
 			vconcat(matArrayFinal, 2, frame); // merge top and bottom row into single Mat
+
 
 			Mat thresh;
 			threshold(frame, thresh, 200, 255, THRESH_BINARY);
@@ -182,13 +188,15 @@ int main()
 				}
 			}
 
-
+			//debug, helps to see how well the code is running
 			if (frames == 120) {
 				auto end = std::chrono::system_clock::now();
 				std::chrono::duration<double> elapsed_seconds = end - start;
 				std::time_t end_time = std::chrono::system_clock::to_time_t(end);
 				std::cout << "elapsed time: " << elapsed_seconds.count() << "s" << " Framerate: " << 120 / elapsed_seconds.count() << std::endl;
 			}
+
+			//this is all hte same as the single camera system
 			if (use_optical_trigger) {
 				noise[noise_counter] = frame_activity; // log noise from frame to noise vector
 				noise_counter++;
