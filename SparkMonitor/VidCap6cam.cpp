@@ -14,11 +14,16 @@
 
 using namespace cv;
 
+
+// All of this code is identical to VidCapture, refer to documentation there for anything not pertaining to the 6 camera system
+
 int main()
 {
 	//Initialize camera as vcap
 	utils::logging::setLogLevel(utils::logging::LogLevel::LOG_LEVEL_SILENT); // removes ugly opencv info logging messsages
 
+
+	// Grab cameras and place them in CamList array
 	std::vector<VideoCapture> CamList;
 	for (int i = 0; i < 6; i++) {
 		VideoCapture cam(i,CAP_DSHOW);
@@ -29,7 +34,7 @@ int main()
 			std::cerr << "ERROR: Could not open camera" << std::endl;
 			return 1;
 		}
-
+		//set properties for each camera
 		cam.set(CAP_PROP_FRAME_WIDTH, 1920);
 		cam.set(CAP_PROP_FRAME_HEIGHT, 1080);
 		cam.set(CAP_PROP_FOURCC, VideoWriter::fourcc('M', 'J', 'P', 'G')); //For arducam MJPG is the only format that supports 1080p/30fps
@@ -98,6 +103,8 @@ int main()
 
 		//Loops until spark is noticed
 		while (true) {
+
+			// Loop through each camera in the array and save image captured to framesArr
 			std::vector<Mat> framesArr;
 			for (auto cam : CamList) {
 				Mat frame;
@@ -108,15 +115,18 @@ int main()
 			}
 			Mat fgMask;
 
+			//**** This is where you have to select the correct order of cameras***
+			//Images from the camera are stored in framesArr 0,1,2,3,4,5
+			//Reorder array based on positon
 			Mat topRow;
-			Mat matArrayTop[] = { framesArr[1],framesArr[5],framesArr[2] };
-			hconcat(matArrayTop, 3, topRow);
-			Mat matArrayBot[] = { framesArr[4],framesArr[3],framesArr[0] };
+			Mat matArrayTop[] = { framesArr[1],framesArr[5],framesArr[2] }; // Arrange frames in the top row of the array from left to right
+			hconcat(matArrayTop, 3, topRow); // merge images into single Mat
+			Mat matArrayBot[] = { framesArr[4],framesArr[3],framesArr[0] }; // Arrange frames in the bottom row of the array from left to right
 			Mat botRow;
-			hconcat(matArrayBot, 3, botRow);
-			Mat matArrayFinal[] = { topRow,botRow };
+			hconcat(matArrayBot, 3, botRow); // merge images into single Mat
+			Mat matArrayFinal[] = { topRow,botRow }; 
 			Mat frame;
-			vconcat(matArrayFinal, 2, frame);
+			vconcat(matArrayFinal, 2, frame); // merge top and bottom row into single Mat
 
 			Mat thresh;
 			threshold(frame, thresh, 200, 255, THRESH_BINARY);
